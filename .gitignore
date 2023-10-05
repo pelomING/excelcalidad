@@ -19,5 +19,6 @@
 Thumbs.db
 
 # archivos de prueba
-.txt
-.zip
+*.txt
+*.zip
+*.xlsx

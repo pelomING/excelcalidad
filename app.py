@@ -112,7 +112,7 @@ def genera_excel(new_numeros, nombre_archivo, lote, letra_cod, periodo):
     wb.save(nombre_archivo)
     """
     muestras = len(new_numeros)
-    wb = openpyxl.load_workbook("formato.xlsx")
+    wb = openpyxl.load_workbook("formato.xl")
     ws = wb["resultado"]
     ws.cell(row=11, column=12).value = muestras
     ws.cell(row=11, column=11).value = lote
