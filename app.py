@@ -2,6 +2,7 @@ import random
 import getopt, sys
 import datetime
 import os.path
+import sqlite3
 
 import openpyxl
 from openpyxl import Workbook
@@ -111,13 +112,31 @@ def genera_excel(new_numeros, nombre_archivo, lote, letra_cod, periodo):
     # Guardar el libro
     wb.save(nombre_archivo)
     """
+    db_file = "base.db"
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+
     muestras = len(new_numeros)
-    wb = openpyxl.load_workbook("formato.xl")
+    wb = openpyxl.load_workbook("formato.xlsx")
     ws = wb["resultado"]
+    #ws1 = wb.create_sheet('detalle')
+    ws1 = wb["detalle"]
     ws.cell(row=11, column=12).value = muestras
     ws.cell(row=11, column=11).value = lote
     ws.cell(row=14, column=11).value = letra_cod
     ws.cell(row=17, column=11).value = periodo
+
+    """
+    ws1.cell(row=1, column=1).value = "Id_sed"
+    ws1.cell(row=1, column=2).value = "Zonal"
+    ws1.cell(row=1, column=3).value = "Sed terreno"
+    ws1.cell(row=1, column=4).value = "Comuna"
+    ws1.cell(row=1, column=5).value = "Potencia Trafo"
+    ws1.cell(row=1, column=6).value = "Alimentador MT"
+    ws1.cell(row=1, column=7).value = "Tipo Medidor"
+    ws1.cell(row=1, column=8).value = "GEO Y"
+    ws1.cell(row=1, column=9).value = "GEO X"
+    """
     columna = 1
     for i in range(len(new_numeros)):
         if i >= 15 and i <= 29:
@@ -129,7 +148,21 @@ def genera_excel(new_numeros, nombre_archivo, lote, letra_cod, periodo):
         fila = i - (columna - 1) * 15
         ws.cell(row=fila+9, column=columna*2 + 1).value = i+1
         ws.cell(row=fila+9, column=columna*2 + 1).value = new_numeros[i]
+        ws1.cell(row=i + 2, column=1).value = new_numeros[i]
+        cursor.execute("SELECT * FROM medidores WHERE id_sed = ?", (new_numeros[i],))
+        medidor = cursor.fetchone()
+        if medidor:
+            ws1.cell(row=i + 2, column=2).value = medidor[1]
+            ws1.cell(row=i + 2, column=3).value = medidor[2]
+            ws1.cell(row=i + 2, column=4).value = medidor[3]
+            ws1.cell(row=i + 2, column=5).value = medidor[4]
+            ws1.cell(row=i + 2, column=6).value = medidor[5]
+            ws1.cell(row=i + 2, column=7).value = medidor[6]
+            ws1.cell(row=i + 2, column=8).value = medidor[7]
+            ws1.cell(row=i + 2, column=9).value = medidor[8]
     wb.save(nombre_archivo + ".xlsx")
+    conn.commit()
+    conn.close()
 
 
 def lee_excel(nombre_archivo, mes_filtro, year_filtro, hoja_entrada):
